@@ -10,19 +10,26 @@ BCSE303P
 Group Members:
 
 Varshini S. Sakthivel 23BCE1805
+
 I Naveen Abraham 23BCE1836
+
 Sowmiya V 23BCE1452
+
 Riya Renju 23BCE1290
 
+
 Priority Inversion
+
 Priority inversion occurs when a higher-priority task is forced to wait because a lower-priority task is holding a resource that it needs. This can significantly degrade system performance, especially in real-time systems.
 Effects: The primary effect is that high-priority tasks are delayed by low-priority tasks, which can lead to missed deadlines or degraded system responsiveness. In extreme cases, priority inversion can cause critical tasks to fail, resulting in severe system malfunctions.
 Mitigation Techniques: Techniques like priority inheritance (where the lower-priority task temporarily inherits the priority of the blocked higher-priority task) or priority ceiling (where tasks run at a higher priority while holding certain resources) are commonly used to mitigate priority inversion.
 
 Deadlock
+
 A deadlock is a situation where a set of tasks are unable to proceed because each is waiting for a resource held by another in the set. This creates a circular wait, where no task can release resources and none can make progress.
 
 The 4 Types of Deadlocks:
+
 Mutual Exclusion: At least one resource is non-shareable.
 Hold and Wait: Tasks hold resources while waiting for others.
 No Preemption: Resources cannot be forcibly taken from a task.
@@ -30,6 +37,7 @@ Circular Wait: There is a closed chain of tasks, each waiting for a resource hel
 Mitigation Techniques: Deadlocks can be avoided using deadlock prevention (modifying resource allocation policies), deadlock avoidance (e.g., Banker’s algorithm), or deadlock detection and recovery (monitoring and intervening when deadlocks occur).
 
 The Simulation:
+
 In this project, a home automation system is simulated with three priority levels of tasks, represented by three LEDs. Each priority handles different aspects:
 Low Priority: Temperature logging.
 Medium Priority: Detecting temperatures.
@@ -38,27 +46,45 @@ Deadlock Scenario: Triggered by a sudden spike in temperature.
 Priority Inheritance: To show mitigation.
 
 Results
+
 Case 1: Normal Run
+
 Low Priority: Executed. Logs temperature (temperatureLow).
+
 Medium Priority: Executed. Measures temperature (temperatureMedium).
+
 High Priority: Executed. Activates security system.
 
+
 Case 2: Deadlock
+
 Low Priority: Executed. Begins logging temperature (sharedTemperature).
+
 Medium Priority: Waits for the shared variable (sharedTemperature), which is in use.
+
 High Priority: Waits for low priority to release the shared resource (sharedTemperature).
 
+
 Case 3: Priority Inversion
+
 Low Priority: Executed. Logs temperature (sharedTemperature) first.
+
 High Priority: Waits while low priority holds the shared resource (sharedTemperature).
+
 Medium Priority: Executed after high priority task. Measures temperature.
 
+
 Case 4: Priority Inheritance
+
 Low Priority: Executed. Temporarily inherits higher priority to complete quickly.
+
 High Priority: Executed after low priority releases the shared resource.
+
 Medium Priority: Executed after high priority. Measures temperature.
 
+
 The Code: 
+
 #include <DHT.h>
 //parts
 #define DHTPIN 2
@@ -250,10 +276,6 @@ void priorityInheritanceRun() {
   delay(500);
   digitalWrite(LED_MEDIUM, LOW);
 }
-
-
-The Circuit:
-
 
 
 Scope: 
