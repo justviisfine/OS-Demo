@@ -1,0 +1,191 @@
+#include <DHT.h>
+//parts
+#define DHTPIN 2
+#define DHTTYPE DHT22
+#define LED_LOW 8
+#define LED_MEDIUM 9
+#define LED_HIGH 10
+DHT dht(DHTPIN, DHTTYPE);
+
+
+//prio initialisation
+enum Priority{
+  PRIORITY_LOW,
+  PRIORITY_MEDIUM,
+  PRIORITY_HIGH
+};
+
+
+//prio variables
+float temperatureLow = 0.0;  
+float temperatureMedium = 0.0;
+float sharedTemperature = 0.0;
+
+
+//starting setup
+void setup(){
+  Serial.begin(9600);
+  dht.begin();
+
+
+  pinMode(LED_LOW, OUTPUT);
+  pinMode(LED_MEDIUM, OUTPUT);
+  pinMode(LED_HIGH, OUTPUT);
+
+
+  digitalWrite(LED_LOW, LOW);
+  digitalWrite(LED_MEDIUM, LOW);
+  digitalWrite(LED_HIGH, LOW);
+}
+
+
+//overall case loop
+void loop(){
+  runCase(1);
+  delay(5000);
+  runCase(2);
+  delay(5000);
+  runCase(3);
+  delay(5000);
+  runCase(4);
+  delay(5000);
+  Serial.println("All cases executed.");
+}
+
+
+void runCase(int caseNumber){
+  Serial.print("Running Case ");
+  Serial.println(caseNumber);
+ 
+  switch (caseNumber) {
+    case 1:
+      normalRun();
+      break;
+    case 2:
+      deadlockRun();
+      break;
+    case 3:
+      priorityInversionRun();
+      break;
+    case 4:
+      priorityInheritanceRun();
+      break;
+    default:
+      Serial.println("Invalid case number");
+  }
+}
+
+
+void normalRun(){
+  Serial.println("Normal Run - All priorities execute correctly.");
+
+
+  temperatureLow = dht.readTemperature();
+  Serial.print("Low priority temperature: ");
+  Serial.println(temperatureLow);
+  digitalWrite(LED_LOW, HIGH);
+  delay(500);
+  digitalWrite(LED_LOW, LOW);
+
+
+  temperatureMedium = dht.readTemperature();
+  Serial.print("Medium priority temperature: ");
+  Serial.println(temperatureMedium);
+  digitalWrite(LED_MEDIUM, HIGH);
+  delay(500);
+  digitalWrite(LED_MEDIUM, LOW);
+
+
+  digitalWrite(LED_HIGH, HIGH);
+  delay(500);
+  digitalWrite(LED_HIGH, LOW);
+}
+
+
+void deadlockRun() {
+  Serial.println("Deadlock Run - Shared variable leads to deadlock.");
+
+
+  //low prio uses shared
+  sharedTemperature = dht.readTemperature();
+  Serial.print("Low priority starts using shared variable: ");
+  Serial.println(sharedTemperature);
+  digitalWrite(LED_LOW, HIGH);
+  delay(500);
+
+
+  //high and medium wait
+  Serial.println("Medium and high priority tasks waiting for shared variable.");
+  digitalWrite(LED_MEDIUM, HIGH);
+  digitalWrite(LED_HIGH, HIGH);
+
+
+    delay(2000);
+
+
+  //lights off
+  digitalWrite(LED_LOW, LOW);
+  digitalWrite(LED_MEDIUM, LOW);
+  digitalWrite(LED_HIGH, LOW);
+}
+
+
+
+
+void priorityInversionRun() {
+  Serial.println("Priority Inversion Run - Low priority blocks high priority.");
+
+
+  sharedTemperature = dht.readTemperature();
+  Serial.print("Low priority temperature: ");
+  Serial.println(sharedTemperature);
+  digitalWrite(LED_LOW, HIGH);
+  delay(2000); //low happens for longer, so high waits
+  digitalWrite(LED_LOW, LOW);
+
+
+  Serial.println("High priority task waiting for low priority.");
+  digitalWrite(LED_HIGH, HIGH);
+  delay(500);
+  digitalWrite(LED_HIGH, LOW);
+
+
+  Serial.println("Medium priority task executing.");
+  float temperature = dht.readTemperature();
+  Serial.print("Temperature: ");
+  Serial.println(temperature);
+  digitalWrite(LED_MEDIUM, HIGH);
+  delay(500);
+  digitalWrite(LED_MEDIUM, LOW);
+}
+
+
+void priorityInheritanceRun() {
+  Serial.println("Priority Inheritance Run - Low priority inherits high priority to release shared resource.");
+
+
+  //low starts and inherits high prio
+  sharedTemperature = dht.readTemperature();
+  Serial.print("Low priority (elevated) temperature: ");
+  Serial.println(sharedTemperature);
+  digitalWrite(LED_LOW, HIGH);
+  delay(1000); //temp elevation of low
+  digitalWrite(LED_LOW, LOW);
+
+
+  //high executes after low is done
+  Serial.println("High priority task executing after priority inheritance.");
+  digitalWrite(LED_HIGH, HIGH);
+  delay(500);
+  digitalWrite(LED_HIGH, LOW);
+
+
+  //medium at the end
+  Serial.println("Medium priority task executing.");
+  float temperature = dht.readTemperature();
+  Serial.print("Temperature: ");
+  Serial.println(temperature);
+  digitalWrite(LED_MEDIUM, HIGH);
+  delay(500);
+  digitalWrite(LED_MEDIUM, LOW);
+}
